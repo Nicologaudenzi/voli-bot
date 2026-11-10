@@ -39,9 +39,9 @@ class Flight:
 
 
 def _get(path: str, params: dict) -> dict:
-    params = {**params, "token": settings.TRAVELPAYOUTS_TOKEN}
+    headers = {"X-Access-Token": settings.TRAVELPAYOUTS_TOKEN.strip()}
     for attempt in range(3):
-        r = SESSION.get(API + path, params=params, timeout=30)
+        r = SESSION.get(API + path, params=params, headers=headers, timeout=30)
         if r.status_code == 429:          # troppe richieste: aspetta e riprova
             time.sleep(5 * (attempt + 1))
             continue
