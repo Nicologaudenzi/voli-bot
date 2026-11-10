@@ -54,11 +54,13 @@ def run() -> None:
     cfg = settings.load_config()
     db = dl.connect()
     sent = 0
+    errors = []
     for origin, origin_name in cfg["origins"].items():
         try:
             flights = fetch_cheapest(origin, cfg)
         except Exception as exc:
             print(f"[errore] voli da {origin}: {exc}")
+            errors.append(str(exc).split(" for url")[0])
             continue
         found = dl.find_deals(db, flights, cfg)   # confronta PRIMA di salvare i prezzi di oggi
         dl.record(db, flights)
@@ -73,6 +75,22 @@ def run() -> None:
             queue_post(db, deal, origin_name, dest_name, st, cfg)
             sent += 1
     print(f"Fatto: {sent} avvisi inviati.")
+    if len(errors) == len(cfg["origins"]):
+        _alert_once(db, "⚠️ Il bot non riesce a leggere i prezzi dei voli: " + errors[0] +
+                    "\nControlla la chiave Travelpayouts (TRAVELPAYOUTS_TOKEN) e che l'account sia attivato.")
+    else:
+        db.execute("DELETE FROM meta WHERE key='last_error_alert'")
+        db.commit()
+
+
+def _alert_once(db, text: str) -> None:
+    """Avvisa su Telegram al massimo una volta ogni 12 ore per lo stesso problema."""
+    row = db.execute("SELECT value FROM meta WHERE key='last_error_alert'").fetchone()
+    if row and dl.now() - dl.datetime.fromisoformat(row["value"]) < timedelta(hours=12):
+        return
+    telegram.send(text)
+    db.execute("INSERT OR REPLACE INTO meta VALUES ('last_error_alert', ?)", (dl.now().isoformat(),))
+    db.commit()
 
 
 if __name__ == "__main__":
