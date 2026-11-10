@@ -27,7 +27,8 @@ deals:
   min_history_days: 7     # giorni di storico prima di usare la media
   history_window_days: 60
   # Finché non c'è storico, vale come offerta solo sotto questo prezzo A/R
-  fallback_max_price: 60
+  fallback_max_price: 35
+  max_alerts_per_run: 4   # al massimo 4 messaggi ogni 30 minuti
   hard_max_price: 400     # mai segnalare sopra questa cifra
   renotify_after_hours: 72
 

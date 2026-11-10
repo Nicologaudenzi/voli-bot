@@ -51,7 +51,7 @@ GitHub Actions (ogni 30 min, gratis)
 Da quel momento parte da solo ogni 30 minuti. I token restano segreti anche se il repository è pubblico.
 
 ## I primi giorni
-Il bot impara il prezzo tipico di ogni tratta. Nei primi **7 giorni** segnala solo i voli sotto **60 € A/R** (`fallback_max_price`); dopo usa lo sconto rispetto alla mediana (`discount: 0.35` = 35%). Su Instagram vanno solo le offerte con almeno il 40% di sconto.
+Il bot impara il prezzo tipico di ogni tratta. Nei primi **7 giorni** segnala solo i voli sotto **35 € A/R** (`fallback_max_price`); dopo usa lo sconto rispetto alla mediana (`discount: 0.35` = 35%). Su Instagram vanno solo le offerte con almeno il 40% di sconto.
 
 ## Prova sul tuo PC
 ```bash

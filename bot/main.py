@@ -55,6 +55,7 @@ def run() -> None:
     db = dl.connect()
     sent = 0
     errors = []
+    all_deals: list[tuple[dl.Deal, str]] = []
     for origin, origin_name in cfg["origins"].items():
         try:
             flights = fetch_cheapest(origin, cfg)
@@ -65,15 +66,23 @@ def run() -> None:
         found = dl.find_deals(db, flights, cfg)   # confronta PRIMA di salvare i prezzi di oggi
         dl.record(db, flights)
         print(f"{origin_name}: {len(flights)} voli, {len(found)} offerte")
-        for deal in found:
-            if sent >= MAX_ALERTS_PER_RUN or not dl.is_new(db, deal, cfg):
-                continue
-            dest_name = city_name(deal.flight.destination)
-            st = stays.build(deal.flight, dest_name, cfg)
-            telegram.send(telegram.deal_message(deal, st, origin_name))
-            dl.mark_sent(db, deal)
-            queue_post(db, deal, origin_name, dest_name, st, cfg)
-            sent += 1
+        all_deals.extend((d, origin_name) for d in found)
+
+    # le offerte migliori di TUTTE le città insieme, una sola per tratta
+    all_deals.sort(key=lambda x: (-x[0].discount, x[0].flight.price))
+    seen_routes = set()
+    for deal, origin_name in all_deals:
+        if sent >= cfg["deals"].get("max_alerts_per_run", MAX_ALERTS_PER_RUN):
+            break
+        if deal.flight.route in seen_routes or not dl.is_new(db, deal, cfg):
+            continue
+        seen_routes.add(deal.flight.route)
+        dest_name = city_name(deal.flight.destination)
+        st = stays.build(deal.flight, dest_name, cfg)
+        telegram.send(telegram.deal_message(deal, st, origin_name))
+        dl.mark_sent(db, deal)
+        queue_post(db, deal, origin_name, dest_name, st, cfg)
+        sent += 1
     print(f"Fatto: {sent} avvisi inviati.")
     if len(errors) == len(cfg["origins"]):
         _alert_once(db, "⚠️ Il bot non riesce a leggere i prezzi dei voli: " + errors[0] +

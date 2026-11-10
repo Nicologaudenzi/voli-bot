@@ -96,11 +96,12 @@ def is_new(db: sqlite3.Connection, deal: Deal, cfg: dict) -> bool:
     """Evita di mandare due volte la stessa offerta (a meno che il prezzo scenda)."""
     f = deal.flight
     since = (now() - timedelta(hours=cfg["deals"]["renotify_after_hours"])).isoformat()
+    # stessa tratta (qualsiasi data) già segnalata di recente: rimanda solo se costa almeno il 15% in meno
     row = db.execute(
-        "SELECT MIN(price) p FROM alerts WHERE route=? AND departure=? AND return_date=? AND sent_at>=?",
-        (f.route, f.departure.isoformat(), f.return_date.isoformat(), since),
+        "SELECT MIN(price) p FROM alerts WHERE route=? AND sent_at>=?",
+        (f.route, since),
     ).fetchone()
-    return row["p"] is None or f.price < row["p"]
+    return row["p"] is None or f.price <= row["p"] * 0.85
 
 
 def mark_sent(db: sqlite3.Connection, deal: Deal) -> None:
