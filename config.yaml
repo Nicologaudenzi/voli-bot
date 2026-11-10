@@ -1,0 +1,45 @@
+# ============================================================
+#  Configurazione del bot "Voli Sottoprezzo"
+#  Modifica qui: non serve toccare il codice.
+# ============================================================
+
+# Città di partenza (codici IATA di CITTÀ, includono tutti gli aeroporti)
+#   MIL = Malpensa + Linate + Bergamo   ROM = Fiumicino + Ciampino
+origins:
+  MIL: Milano
+  ROM: Roma
+  NAP: Napoli
+  BRI: Bari
+
+currency: eur
+market: it            # dati raccolti dagli utenti italiani di Aviasales
+months_ahead: 4       # controlla i voli dei prossimi N mesi
+
+# Filtri sul viaggio
+trip:
+  min_nights: 2
+  max_nights: 10
+  max_transfers: 1    # 0 = solo diretti
+
+# Quando un volo è "sottoprezzo"
+deals:
+  discount: 0.35          # almeno il 35% sotto il prezzo tipico della tratta
+  min_history_days: 7     # giorni di storico prima di usare la media
+  history_window_days: 60
+  # Finché non c'è storico, vale come offerta solo sotto questo prezzo A/R
+  fallback_max_price: 60
+  hard_max_price: 400     # mai segnalare sopra questa cifra
+  renotify_after_hours: 72
+
+# Alloggi (link di ricerca filtrati, gratis)
+stays:
+  adults: 2
+  max_price_per_night: 70   # tetto €/notte nei filtri di Booking e Airbnb
+
+# Instagram
+instagram:
+  enabled: true
+  max_posts_per_day: 3
+  min_hours_between_posts: 4
+  min_discount_for_post: 0.40   # su Instagram solo le offerte migliori
+  hashtags: "#voliabassocosto #offertevoli #viaggiaresmart #weekendfuori #volilowcost #viaggi #travelitaly"
